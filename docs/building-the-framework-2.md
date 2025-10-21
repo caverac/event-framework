@@ -1,4 +1,4 @@
-# Building the framework (part 2)
+# Building the framework (Part II)
 
 In the previous section we discussed with detail the notions of Actual Occaion and Prehension, we also built core abstractions to represnet them in code. To wire them up we created two simple disposable functions : `install(...)` and `run(...)` to help us bind prehensions to their subjects and run a simple breadth-first processing loop respectively.
 

@@ -1,9 +1,13 @@
 site_name: Event Framework
+repo_url: https://github.com/caverac/event-framework
+repo_name: caverac/event-framework
 theme:
   name: material
   features:
     - navigation.sections
     - content.code.copy
+    - content.action.view
+    - content.action.edit
   palette:
     - media: "(prefers-color-scheme: light)"
       scheme: default
@@ -15,9 +19,11 @@ theme:
       toggle:
         icon: material/white-balance-sunny
         name: "Switch to light mode"
+edit_uri: edit/main/docs/
 
 plugins:
   - search
+  - autorefs
   - mkdocstrings:
       default_handler: python
       handlers:
@@ -36,10 +42,17 @@ markdown_extensions:
       anchor_linenums: true
       pygments_lang_class: true
   - pymdownx.superfences
+  - pymdownx.arithmatex:
+      generic: true
 
 nav:
   - Home: index.md
   - Building the Framework:
       - Part I: building-the-framework-1.md
       - Part II: building-the-framework-2.md
-  - API: api.md
+  - Domain Driven Design: ddd.md
+  - Existing Solutions: existing-solutions.md
+  - Glossary: glossary.md
+
+extra_javascript:
+  - https://unpkg.com/mathjax@3/es5/tex-mml-chtml.js

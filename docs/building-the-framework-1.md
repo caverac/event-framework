@@ -1,11 +1,12 @@
-# Building the framework (part 1)
+# Building the framework (Part I)
 
 We will start by going through the steps to build the framework from scratch.
 This will give you a good understanding of how the pieces fit together, from the core
-abstractions of Whitehead's cosmology to the actual python code.
+abstractions of Whitehead's cosmology to the actual python code. The code is available
+[on GitHub](https://github.com/caverac/event-framework), my intention is to progressively build all the pieces so you can see how they fit together.
 
 ## Actual Occasion
-An actual occasion—also called an *actual entity*—is, for Whitehead, the fundamental unit of reality: a tiny act of becoming in which the world is taken up, integrated, and completed into one new concrete fact (a "satisfaction"). Everything else (objects, enduring things, laws) is derivative of patterns of such occasions.
+An actual [occasion](glossary.md#occasion) (also called an *actual entity*) is, for Whitehead, the fundamental unit of reality: a tiny act of becoming in which the world is taken up, integrated, and completed into one new concrete fact (a "satisfaction"). Everything else (objects, enduring things, laws) is derivative of patterns of such occasions.
 
 ### Key traits
 
@@ -13,7 +14,7 @@ An actual occasion—also called an *actual entity*—is, for Whitehead, the fun
 
 - **Process, not substance**: An occasion is not a little lump of stuff; it's a *happening* with a beginning (taking in data), a middle (integrating it), and an end (a completed fact).
 
-- **Internally relational**: Each occasion feels relevant data from the past (prehensions, will come back to this later) while becoming—but the occasion itself is the unit; those feelings are its ingredients, not separate building blocks.
+- **Internally relational**: Each occasion feels relevant data from the past (prehensions, will come back to this later) while becoming, but the occasion itself is the unit; those feelings are its ingredients, not separate building blocks.
 
 - **Once-and-done**: An occasion happens once and is then complete. Persistence (like a person, a rock, or a running system) is a pattern of many occasions, not one occasion persisting. This is a key shift from object-oriented thinking.
 
@@ -23,7 +24,7 @@ An actual occasion—also called an *actual entity*—is, for Whitehead, the fun
 
 - **A micro-decision**: You reach for the hot pan, notice the heat, and in that moment decide to grab a mitt. That tiny, integrated "feel → assess → decide" is an occasion.
 
-- **A pang of regret that passes**: A text reminds you of something you forgot. The feeling rises, integrates with your current aims ("I'll fix it now"), and settles. That bounded episode of becoming is an occasion.
+- **A sudden regret that passes**: A text reminds you of something you forgot. The feeling rises, integrates with your current aims ("I'll fix it now"), and settles. That bounded episode of becoming is an occasion.
 
 In each case, the occasion is not the long story ("my whole day") and not the abstract category ("recognition"); it's the single, concrete, integrated moment. 
 
@@ -31,27 +32,27 @@ In all these examples, the actual occasion is a small, self-contained process of
 
 ### Examples to software 
 
-These are analogies. In software we talk about events (records/messages) and state updates; an "actual occasion" maps best to a *bounded act of processing* that consumes prior facts and yields a new concrete result.
+These are analogies. In software design we are more familiar with events (records/messages) and state updates; an "actual occasion" maps best to a *bounded act of processing* that consumes prior facts and yields a new concrete result.
 
 - **Bank application** — posting a transfer:
 
-    - Inputs: a validated FundsTransferInitiated fact, current ledger balances, risk flags.
+    - Inputs: a validated `FundsTransferInitiated` fact, current ledger balances, risk flags.
     - Becoming: the system integrates those inputs under its rules (limits, idempotency).
-    - Completion: a posted transfer (new ledger entries) and a durable FundsTransferred fact.
+    - Completion: a posted transfer (new ledger entries) and a durable `FundsTransferred`fact.
     - Occasion-like unit: that single, coherent posting step—one act that takes the past into account, applies rules, and finishes into a new fact.
 
 - **User logging strategy** — writing an audit record:
 
-    - Inputs: a LoginSucceeded fact, user metadata, policy ("mask PII").
+    - Inputs: a `LoginSucceeded` fact, user metadata, policy ("mask PII").
     - Becoming: the logger integrates the fact with policy (redaction, correlation id).
     - Completion: an immutable audit entry written to storage.
     - Occasion-like unit: that one audit write: it doesn’t persist as "an ongoing thing"; it happens and is done.
 
 - **Orbit integration** — processing a run request:
 
-    - Inputs: OrbitIntegrationRequested (ICs, potential version, integrator config).
+    - Inputs: `OrbitIntegrationRequested`(ICs, potential version, integrator config).
     - Becoming: the worker computes the trajectory under those parameters.
-    - Completion: trajectory written (e.g., S3), OrbitIntegrated fact with metrics.
+    - Completion: trajectory written (e.g., S3), `OrbitIntegrated` fact with metrics.
     - Occasion-like unit: the one run from request to completed output. (Finer-grained: a single integrator step can also serve as the occasion if you model at that resolution.)
 
 ## Prehension
@@ -96,21 +97,21 @@ In code we model facts and state changes; a "prehension" maps best to one rule-b
 - **Bank transfer posting (policy prehension)**:
 
     - Subject = the posting step (this processing occasion).
-    - Datum = FundsTransferInitiated, current balances, limits.
+    - Datum = `FundsTransferInitiated`, current balances, limits.
     - Subjective form = "evaluate for risk/limits; approve or reject."
     The step prehends the facts under its rule and yields a concrete result (posted entries or a rejection).
 
 - **Login audit (redaction prehension)**:
 
     - Subject = the audit-write step.
-    - Datum = LoginSucceeded + user metadata.
+    - Datum = `LoginSucceeded`+ user metadata.
     - Subjective form = "mask PII, attach correlation id."
     The logger feels the datum as-to-be-redacted, then commits a record.
 
 - **Orbit integration (step-wise uptake)**:
 
     - Subject = this integrator step.
-    - Datum = current state (x, v), potential parameters, step size policy.
+    - Datum = current state $(x, p)$, potential parameters, step size policy.
     - Subjective form = "advance with leapfrog; adjust velocity half-kick; (optionally) exclude unstable step."
     Each step prehends the current data via its method and contributes to the finished trajectory.
 
@@ -140,9 +141,9 @@ class Datum:
 
 A few things to note here
 
-- We use `dataclass` to define `Datum`, which makes it easy to create immutable data structures.
+- We use `dataclass` to define `Datum`, which makes it easy to create immutable data structures (via `frozen=True`).
 - We automatically generate a unique ID and timestamp for each datum instance, but allow them to be overridden if needed.
-- Although not necessarily obvious, we introduced `correlation_id` and `causation_id` to help with tracing the flow of data through the system.
+- Although not necessarily obvious, we introduced `correlation_id` and `causation_id` to help with tracing the flow of data through the system. We will come back to this later.
 
 Now we want to create our model for an `ActualOccasion`, which will be the core processing unit that can prehend data and produce new data.
 
