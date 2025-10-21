@@ -1,0 +1,65 @@
+[project]
+name = "event_framework"
+version = "0.1.0"
+description = "Whitehead-inspired DDD framework: From Philosophical Cosmology to Software Design"
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+dependencies = [
+    "pydantic>=2.8",
+    "typing-extensions>=4.12"
+]
+
+[build-system]
+requires = ["hatchling>=1.25"]
+build-backend = "hatchling.build"
+
+[dependency-groups]
+dev = [
+    "pytest>=8.3",
+    "pytest-cov>=5.0",
+    "mypy>=1.11",
+    "flake8>=7.3.0",
+    "pylint>=4.0.0",
+    "black>=25.9.0",
+    "pydocstyle>=6.3.0",
+]
+docs = [
+    "mkdocs>=1.6",
+    "mkdocs-material>=9.5",
+    "mkdocstrings>=0.25",
+    "mkdocstrings-python>=1.10",
+    "mkdocs-jupyter>=0.25",
+    "jupyter>=1.0",
+    "mkdocs-bibtex>=4.4.0",
+]
+
+[tool.uv]
+default-groups = ["dev", "docs"]
+
+[tool.pylint]
+max-line-length = 120
+disable = [
+    "C0103", # invalid-name
+    "R0903", # too-few-public-methods
+]
+
+[pydocstyle]
+convention = "numpy"
+
+[tool.pytest.ini_options]
+addopts = [
+    "--doctest-modules",
+    "--doctest-glob=README.*",
+    "--doctest-glob=*.md",
+    "--cov=event_framework",
+    "--cov-report=xml",
+    "--cov-fail-under=100",    
+]
+
+
+testpaths = [
+  "event_framework",
+  "tests",
+  "docs",
+]

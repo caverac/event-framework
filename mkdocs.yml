@@ -1,0 +1,45 @@
+site_name: Event Framework
+theme:
+  name: material
+  features:
+    - navigation.sections
+    - content.code.copy
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      toggle:
+        icon: material/weather-night
+        name: "Switch to dark mode"
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      toggle:
+        icon: material/white-balance-sunny
+        name: "Switch to light mode"
+
+plugins:
+  - search
+  - mkdocstrings:
+      default_handler: python
+      handlers:
+        python:
+          options:
+            docstring_style: numpy
+            show_signature: true
+  - bibtex:
+      bib_file: docs/refs.bib
+      csl_file: docs/apa.csl
+      enable_inline_citations: false
+
+markdown_extensions:
+  - footnotes
+  - pymdownx.highlight:
+      anchor_linenums: true
+      pygments_lang_class: true
+  - pymdownx.superfences
+
+nav:
+  - Home: index.md
+  - Building the Framework:
+      - Part I: building-the-framework-1.md
+      - Part II: building-the-framework-2.md
+  - API: api.md

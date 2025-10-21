@@ -1,0 +1,14 @@
+# cache files
+__pycache__
+.ipynb_checkpoints
+.coverage
+coverage.xml
+
+# virtual environment
+.venv
+
+# local development files
+notebooks
+
+# docs
+site
