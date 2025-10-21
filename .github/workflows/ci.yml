@@ -16,7 +16,7 @@ jobs:
   quality:
     name: Linters, type-checks, tests
     runs-on: ubuntu-latest
-    variables:
+    env:
       PROJECT_FILES: event_framework tests
 
     steps:
