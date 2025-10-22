@@ -340,279 +340,113 @@ class TestNexus:
         assert len(result) == 1
         assert result[0] is datum
 
-    # def test_emit_with_derived_data(self):
-    #     """Test emit with occasions that generate derived data."""
-    #     nexus = Nexus(name="test")
-    #     occasion = ActualOccasion(name="occ", state={})
+    def test_emit_with_derived_data(self):
+        """Test emit with occasions that generate derived data."""
+        nexus = Nexus(name="test")
+        occasion = ActualOccasion(name="occ", state={})
 
-    #     def create_derived(occ: ActualOccasion, d: Datum) -> list[Datum]:
-    #         if d.name == "input":
-    #             return [Datum(name="derived", payload={"source": d.name})]
-    #         return []
+        def create_derived(occ: ActualOccasion, d: Datum) -> list[Datum]:
+            if d.name == "input":
+                return [Datum(name="derived", payload={"source": d.name})]
+            return []
 
-    #     def selector(d: Datum) -> bool:
-    #         return d.name == "input"
+        def selector(d: Datum) -> bool:
+            return d.name == "input"
 
-    #     occasion.on(selector, create_derived)
-    #     nexus.add(occasion)
+        occasion.on(selector, create_derived)
+        nexus.add(occasion)
 
-    #     input_datum = Datum(name="input", payload={"data": "test"})
-    #     result = nexus.emit(input_datum)
+        input_datum = Datum(name="input", payload={"data": "test"})
+        result = nexus.emit(input_datum)
 
-    #     assert len(result) == 2
-    #     assert result[0].name == "input"
-    #     assert result[1].name == "derived"
-    #     assert result[1].correlation_id == input_datum.id
-    #     assert result[1].causation_id == input_datum.id
+        assert len(result) == 2
+        assert result[0].name == "input"
+        assert result[1].name == "derived"
+        assert result[1].correlation_id == input_datum.id
+        assert result[1].causation_id == input_datum.id
 
-    # def test_emit_with_chain_reaction(self):
-    #     """Test emit with a chain reaction of derived data."""
-    #     nexus = Nexus(name="test")
+    def test_emit_with_chain_reaction(self):
+        """Test emit with a chain reaction of derived data."""
+        nexus = Nexus(name="test")
 
-    #     # First occasion: input -> intermediate
-    #     occ1 = ActualOccasion(name="occ1", state={})
+        # First occasion: input -> intermediate
+        occ1 = ActualOccasion(name="occ1", state={})
 
-    #     def input_selector(d: Datum) -> bool:
-    #         return d.name == "input"
+        def input_selector(d: Datum) -> bool:
+            return d.name == "input"
 
-    #     def input_form(occ: ActualOccasion, d: Datum) -> list[Datum]:
-    #         return [Datum(name="intermediate", payload={"step": 1})]
+        def input_form(occ: ActualOccasion, d: Datum) -> list[Datum]:
+            return [Datum(name="intermediate", payload={"step": 1})]
 
-    #     occ1.on(input_selector, input_form)
+        occ1.on(input_selector, input_form)
 
-    #     # Second occasion: intermediate -> final
-    #     occ2 = ActualOccasion(name="occ2", state={})
+        # Second occasion: intermediate -> final
+        occ2 = ActualOccasion(name="occ2", state={})
 
-    #     def intermediate_selector(d: Datum) -> bool:
-    #         return d.name == "intermediate"
+        def intermediate_selector(d: Datum) -> bool:
+            return d.name == "intermediate"
 
-    #     def intermediate_form(occ: ActualOccasion, d: Datum) -> list[Datum]:
-    #         return [Datum(name="final", payload={"step": 2})]
+        def intermediate_form(occ: ActualOccasion, d: Datum) -> list[Datum]:
+            return [Datum(name="final", payload={"step": 2})]
 
-    #     occ2.on(intermediate_selector, intermediate_form)
+        occ2.on(intermediate_selector, intermediate_form)
 
-    #     nexus.add(occ1, occ2)
+        nexus.add(occ1, occ2)
 
-    #     input_datum = Datum(name="input", payload={})
-    #     result = nexus.emit(input_datum)
+        input_datum = Datum(name="input", payload={})
+        result = nexus.emit(input_datum)
 
-    #     assert len(result) == 3
-    #     assert result[0].name == "input"
-    #     assert result[1].name == "intermediate"
-    #     assert result[2].name == "final"
+        assert len(result) == 3
+        assert result[0].name == "input"
+        assert result[1].name == "intermediate"
+        assert result[2].name == "final"
 
-    #     # Check causation chain
-    #     assert result[1].correlation_id == input_datum.id
-    #     assert result[1].causation_id == input_datum.id
-    #     assert result[2].correlation_id == input_datum.id  # Same correlation
-    #     assert result[2].causation_id == result[1].id  # Caused by intermediate
+        # Check causation chain
+        assert result[1].correlation_id == input_datum.id
+        assert result[1].causation_id == input_datum.id
+        assert result[2].correlation_id == input_datum.id  # Same correlation
+        assert result[2].causation_id == result[1].id  # Caused by intermediate
 
-    # def test_emit_multiple_input_data(self):
-    #     """Test emit with multiple input data items."""
-    #     nexus = Nexus(name="test")
-    #     occasion = ActualOccasion(name="occ", state={})
+    def test_emit_with_middleware(self):
+        """Test emit with middleware applied."""
+        nexus = Nexus(name="test")
 
-    #     # Echo each datum
-    #     def echo_selector(d: Datum) -> bool:
-    #         return True
+        # Middleware that adds a timestamp
+        def timestamp_middleware(datum: Datum) -> Datum:
+            return Datum(
+                name=datum.name,
+                payload={**datum.payload, "timestamp": "2001-01-01"},
+                id=datum.id,
+                created_at=datum.created_at,
+                correlation_id=datum.correlation_id,
+                causation_id=datum.causation_id,
+            )
 
-    #     def echo_form(occ: ActualOccasion, d: Datum) -> list[Datum]:
-    #         return [Datum(name=f"echo_{d.name}", payload=d.payload)]
+        nexus.use(timestamp_middleware)
 
-    #     occasion.on(echo_selector, echo_form)
+        datum = Datum(name="test", payload={"data": "value"})
+        result = nexus.emit(datum)
 
-    #     nexus.add(occasion)
+        assert len(result) == 1
+        assert result[0].payload["timestamp"] == "2001-01-01"
 
-    #     datum1 = Datum(name="first", payload={"id": 1})
-    #     datum2 = Datum(name="second", payload={"id": 2})
+    def test_snapshot(self):
+        """Test taking a snapshot of occasion states."""
+        nexus = Nexus(name="test")
 
-    #     result = nexus.emit(datum1, datum2)
+        occ1 = ActualOccasion(name="counter", state={"count": 5})
+        occ2 = ActualOccasion(name="accumulator", state={"total": 100, "items": 10})
 
-    #     assert len(result) == 4
-    #     input_names = {r.name for r in result if not r.name.startswith("echo_")}
-    #     echo_names = {r.name for r in result if r.name.startswith("echo_")}
+        nexus.add(occ1, occ2)
 
-    #     assert input_names == {"first", "second"}
-    #     assert echo_names == {"echo_first", "echo_second"}
+        snapshot = nexus.snapshot()
 
-    # def test_emit_with_middleware(self):
-    #     """Test emit with middleware applied."""
-    #     nexus = Nexus(name="test")
+        expected = {"counter": {"count": 5}, "accumulator": {"total": 100, "items": 10}}
 
-    #     # Middleware that adds a timestamp
-    #     def timestamp_middleware(datum: Datum) -> Datum:
-    #         return Datum(
-    #             name=datum.name,
-    #             payload={**datum.payload, "timestamp": "2001-01-01"},
-    #             id=datum.id,
-    #             created_at=datum.created_at,
-    #             correlation_id=datum.correlation_id,
-    #             causation_id=datum.causation_id,
-    #         )
-
-    #     nexus.use(timestamp_middleware)
-
-    #     datum = Datum(name="test", payload={"data": "value"})
-    #     result = nexus.emit(datum)
-
-    #     assert len(result) == 1
-    #     assert result[0].payload["timestamp"] == "2001-01-01"
-
-    # def test_snapshot(self):
-    #     """Test taking a snapshot of occasion states."""
-    #     nexus = Nexus(name="test")
-
-    #     occ1 = ActualOccasion(name="counter", state={"count": 5})
-    #     occ2 = ActualOccasion(name="accumulator", state={"total": 100, "items": 10})
-
-    #     nexus.add(occ1, occ2)
-
-    #     snapshot = nexus.snapshot()
-
-    #     expected = {"counter": {"count": 5}, "accumulator": {"total": 100, "items": 10}}
-
-    #     assert snapshot == expected
-
-    # def test_snapshot_empty_nexus(self):
-    #     """Test snapshot with no occasions."""
-    #     nexus = Nexus(name="empty")
-    #     snapshot = nexus.snapshot()
-    #     assert not snapshot
-
-
-# class TestIntegration:
-#     """Integration tests combining multiple components."""
-
-#     def test_event_sourced_counter(self):
-#         """Test a simple event-sourced counter using the framework."""
-#         nexus = Nexus(name="counter_system")
-
-#         # Counter aggregate
-#         counter = ActualOccasion(name="counter", state={"value": 0})
-
-#         def handle_increment(occ, datum):
-#             amount = datum.payload.get("amount", 1)
-#             occ.state["value"] += amount
-#             return [
-#                 Datum(
-#                     name="counter_incremented",
-#                     payload={"new_value": occ.state["value"], "amount": amount},
-#                 )
-#             ]
-
-#         def handle_decrement(occ, datum):
-#             amount = datum.payload.get("amount", 1)
-#             occ.state["value"] -= amount
-#             return [
-#                 Datum(
-#                     name="counter_decremented",
-#                     payload={"new_value": occ.state["value"], "amount": amount},
-#                 )
-#             ]
-
-#         def increment_selector(d):
-#             return d.name == "increment"
-
-#         def decrement_selector(d):
-#             return d.name == "decrement"
-
-#         counter.on(increment_selector, handle_increment)
-#         counter.on(decrement_selector, handle_decrement)
-
-#         # Projection
-#         projection = ActualOccasion(name="counter_projection", state={"history": []})
-
-#         def record_change(occ, datum):
-#             if datum.name in ["counter_incremented", "counter_decremented"]:
-#                 occ.state["history"].append(
-#                     {
-#                         "event": datum.name,
-#                         "value": datum.payload["new_value"],
-#                         "timestamp": datum.created_at.isoformat(),
-#                     }
-#                 )
-#             return []
-
-#         def all_selector(d):
-#             return True
-
-#         projection.on(all_selector, record_change)
-
-#         nexus.add(counter, projection)
-
-#         # Execute commands
-#         events = nexus.emit(
-#             Datum(name="increment", payload={"amount": 5}),
-#             Datum(name="increment", payload={"amount": 3}),
-#             Datum(name="decrement", payload={"amount": 2}),
-#         )
-
-#         # Verify final state
-#         assert counter.state["value"] == 6  # 0 + 5 + 3 - 2
-#         assert len(projection.state["history"]) == 3
-
-#         # Verify event chain
-#         event_names = [e.name for e in events]
-#         assert "increment" in event_names
-#         assert "counter_incremented" in event_names
-#         assert "counter_decremented" in event_names
-
-#     def test_saga_pattern(self):
-#         """Test implementing a saga pattern with the framework."""
-#         nexus = Nexus(name="order_saga")
-
-#         # Order saga
-#         saga = ActualOccasion(name="order_saga", state={"orders": {}})
-
-#         def start_order(occ, datum):
-#             order_id = datum.payload["order_id"]
-#             occ.state["orders"][order_id] = {"status": "payment_pending"}
-#             return [Datum(name="payment_requested", payload={"order_id": order_id})]
-
-#         def handle_payment_success(occ, datum):
-#             order_id = datum.payload["order_id"]
-#             if order_id in occ.state["orders"]:
-#                 occ.state["orders"][order_id]["status"] = "inventory_pending"
-#                 return [
-#                     Datum(name="inventory_reserved", payload={"order_id": order_id})
-#                 ]
-#             return []
-
-#         def handle_inventory_success(occ, datum):
-#             order_id = datum.payload["order_id"]
-#             if order_id in occ.state["orders"]:
-#                 occ.state["orders"][order_id]["status"] = "completed"
-#                 return [Datum(name="order_completed", payload={"order_id": order_id})]
-#             return []
-
-#         def order_created_selector(d):
-#             return d.name == "order_created"
-
-#         def payment_succeeded_selector(d):
-#             return d.name == "payment_succeeded"
-
-#         def inventory_reserved_selector(d):
-#             return d.name == "inventory_reserved"
-
-#         saga.on(order_created_selector, start_order)
-#         saga.on(payment_succeeded_selector, handle_payment_success)
-#         saga.on(inventory_reserved_selector, handle_inventory_success)
-
-#         nexus.add(saga)
-
-#         # Simulate order flow
-#         events = nexus.emit(
-#             Datum(name="order_created", payload={"order_id": "order-123"}),
-#             Datum(name="payment_succeeded", payload={"order_id": "order-123"}),
-#         )
-
-#         # Verify saga state progression
-#         order_state = saga.state["orders"]["order-123"]
-#         assert order_state["status"] == "completed"
-
-#         # Verify event chain
-#         event_names = [e.name for e in events]
-#         assert "order_created" in event_names
-#         assert "payment_requested" in event_names
-#         assert "inventory_reserved" in event_names
-#         assert "order_completed" in event_names
+        assert snapshot == expected
+
+    def test_snapshot_empty_nexus(self):
+        """Test snapshot with no occasions."""
+        nexus = Nexus(name="empty")
+        snapshot = nexus.snapshot()
+        assert not snapshot

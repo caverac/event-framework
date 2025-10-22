@@ -191,6 +191,7 @@ class Nexus:
         seen: list[Datum] = []
 
         while queue:
+
             current = queue.pop(0)
             seen.append(current)
 
