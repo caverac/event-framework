@@ -188,7 +188,7 @@ And that's it for now! We have the basic building blocks to start modeling actua
 
 ### Putting it all together
 To wire everything together through a simulation, let's consider an domain specific example: a 
-payment processing system. First let us define a simple selector
+payment processing system. First let us define a simple selector. Remeber a selector is a function that tells us whether a given datum is relevant for a particular prehension. Im this case, we will create a selector that matches data by their name, a very simple implementation:
 
 ```python
 def by_name(name: str) -> DatumSelector:
@@ -197,7 +197,7 @@ def by_name(name: str) -> DatumSelector:
     return selector
 ```
 
-This selector will help us filter data by its name. Next, we can define a subjective form that processes a payment:
+Now we can define some subjective forms. A subjective form is a function that takes an occasion and a datum, and produces new datums based on the occasion's state and the input datum. Let's define a few forms for our payment processing example.
 
 ```python
 def consider_payment(payments: ActualOccasion, d: Datum) -> Iterable[Datum]:
@@ -217,17 +217,19 @@ def consider_payment(payments: ActualOccasion, d: Datum) -> Iterable[Datum]:
     )
 ```
 
-This form checks if the payment total is within the allowed limit and yields a new datum indicating whether the payment was authorized or declined.
+This form checks if the payment total is within the allowed limit and yields a new datum indicating whether the payment was authorized or declined. If you look closely, you will see that we are also updating the state of the `payments` occasion to record the decision made. This is arguably a bit unorthodox, since we are mixing state mutation with datum production. In principle we could decouple those two concerns, but we will keep it simple for now.
+
+Another subjective form could be one that records the outcome of the payment decision:
 
 ```python
 def record_outcome(decider: ActualOccasion, d: Datum) -> Iterable[Datum]:
     order_id = d.payload["order_id"]
     status = "ACCEPTED" if d.name == "PaymentAuthorized" else "REJECTED"
     decider.state.setdefault("orders", {})[order_id] = {"status": status}
-    return ()  # nothing further
+    return () 
 ```
 
-This form records the final outcome of the payment decision in the occasion's state.
+And finally, let's define a subjective form that audits everything:
 
 ```python
 def audit_everything(audit: ActualOccasion, d: Datum) -> Iterable[Datum]:
@@ -235,9 +237,9 @@ def audit_everything(audit: ActualOccasion, d: Datum) -> Iterable[Datum]:
     return ()
 ```
 
-This form logs every datum that passes through the audit occasion.
+Note the pattern here: each subjective form takes in an occasion and a datum, performs some logic (possibly updating the occasion's state), and yields new datums as output.
 
-### One final step
+### One final step (optional)
 
 So far we have defined our core abstractions and some specific occasions for payment processing. Now we can set up the occasions and simulate some data flowing through them. Let's define a *temporary* method to install the prehensions and run the simulation.
 
@@ -252,7 +254,7 @@ def run(initial_data: list[Datum], occasions: list[ActualOccasion]) -> list[Datu
     Breadth-first processing loop:
     - Take a datum from the queue
     - Let every occasion handle it (apply its matching prehensions)
-    - Enqueue any derived datums
+    - Enqueue any derived data
     - Return full closure (inputs + derived)
     """
     queue: list[Datum] = list(initial_data)
@@ -304,7 +306,7 @@ Should produce
 
 
 ```shell
-Closure (all datums seen):
+Closure (all data seen):
   OrderPlaced {'order_id': 'A-100', 'total': 420.0}
   OrderPlaced {'order_id': 'B-200', 'total': 640.0}
   PaymentAuthorized {'order_id': 'A-100', 'amount': 420.0}
@@ -331,9 +333,8 @@ Audit: events_logged = 4
 
 - Occasion owns behavior via `.on(selector, form)`; `handle(datum)` applies the matching prehensions.
 - Prehension is first-class: we build them explicitly, then `install(...)` binds them onto their subjects.
-- The tiny `run(...)` loop is just glue to push datums around—so you can see everything working before we introduce a bus/router abstraction.
+- The tiny `run(...)` loop is just glue to push data around—so you can see everything working before we introduce a bus/router abstraction.
 - There is a clear delineation of responsbilities in this framework: who reacts to what and how. Occasions are the subject, prehensions are edges and data are facts. Behavios lives on the dge, by binding a selector and a subjective form to an occasion.
-- This framewok suppoers plugin-behvior out of the box, without touching occassion's internal logic. Just add more prehensions to the occassion as needed.
-- Unit testability is also improved, since you can test each subjective form in isolation, as a pure function of (occasion, datum) -> derived data.
-- Although not complete yet, it is already a embarrassingly parallizable framwerk by design.
-
+- This framework supports plugin-behavior out of the box, without touching occasion's internal logic. Just add more prehensions to the occasion as needed.
+- Unit testability is also improved, since you can test each subjective form in isolation, as a pure function of (occasion, datum) → derived data.
+- Although not complete yet, it is already a embarrassingly parallelizable framework by design. Each occasion can process data independently, so you can easily distribute the workload across multiple threads or machines.

@@ -1,10 +1,10 @@
 # Glossary
 
 ## Prehension
-A selective “grasp” of what matters: the taking-up of relevant facts, inputs, and relations from the past into the present decision.
+A selective "grasp" of what matters: the taking-up of relevant facts, inputs, and relations from the past into the present decision.
 
 ## Invariant 
-A stable form or constraint (Whitehead’s “eternal object”) that ingresses into a decision, shaping what counts as valid or permissible.
+A stable form or constraint (Whitehead’s "eternal object") that ingresses into a decision, shaping what counts as valid or permissible.
 
 ## Occasion
 A concrete unit of process: one bounded decision event that gathers prehensions, applies invariants, and produces an outcome.

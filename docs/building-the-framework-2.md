@@ -1,18 +1,18 @@
 # Building the framework (Part II)
 
-In the previous section we discussed with detail the notions of Actual Occaion and Prehension, we also built core abstractions to represnet them in code. To wire them up we created two simple disposable functions : `install(...)` and `run(...)` to help us bind prehensions to their subjects and run a simple breadth-first processing loop respectively.
+In the previous section we discussed with detail the notions of Actual Occasion and Prehension, we also built core abstractions to represnet them in code. To wire them up we created two simple disposable functions : `install(...)` and `run(...)` to help us bind prehensions to their subjects and run a simple breadth-first processing loop respectively.
 
 Now we can discuss the last piece of the puzzle: the Nexus, which will help us organize multiple occasions and route data between them.
 
 ## Nexus
-A nexus is a togetherness--a pattern or grouping--of actual occasions that are related by how they prehend one another. It is not a new fundamental unit (that’s the actual occasion); it’s the organized many formed by their relations. 
+A nexus is a togetherness--a pattern or grouping--of actual occasions that are related by how they prehend one another. It is not a new fundamental unit (that's the actual occasion); it's the organized many formed by their relations. 
 
 ### Key traits
 
-- **Many-made-one (pattern)**: A nexus is a set of occasions bound by relevant prehensions—“this lot hangs together.”
+- **Many-made-one (pattern)**: A nexus is a set of occasions bound by relevant prehensions—"this lot hangs together."
 - **Relational coherence**: The unity comes from recurrent relational patterns (who feels whom, how strongly, in what way).
 - **Not fundamental**: The actual occasion is the basic unit; a nexus is composed of occasions.
-- **Degrees & kinds**: There can be loose nexūs (fleeting clusters) or stable, rule-governed ones. A society is a special nexus with a persistent “social order” (a characteristic pattern that endures across many occasions).
+- **Degrees & kinds**: There can be loose nexūs (fleeting clusters) or stable, rule-governed ones. A society is a special nexus with a persistent "social order" (a characteristic pattern that endures across many occasions).
 - **Regioned/located**: A nexus can be described over a region (spatiotemporal, conceptual, organizational) where its pattern holds.
 - **Open-ended**: Membership can change as new occasions arise and old ones perish; the pattern can strengthen, weaken, bifurcate, or dissolve.
 
@@ -22,7 +22,7 @@ A nexus is a togetherness--a pattern or grouping--of actual occasions that are r
 The quick back-and-forth utterances are individual occasions. The nexus is the conversational group with its cues, shared topic, and rhythms that bind these moments into a recognizable whole.
 
 - **A morning commute traffic cluster**:
-Each driver’s micro-decisions (occasions) relate through braking, merging, pacing. The nexus is the congestion pattern—its formation, wave propagation, and dissipation over a stretch of road.
+Each driver's micro-decisions (occasions) relate through braking, merging, pacing. The nexus is the congestion pattern—its formation, wave propagation, and dissipation over a stretch of road.
 
 - **A classroom session**:
 Moments of attention, questions, and explanations are occasions; the nexus is the class as it unfolds—a coordinated pattern with a shared aim and recognizable order (syllabus, norms).
@@ -32,7 +32,7 @@ Moments of attention, questions, and explanations are occasions; the nexus is th
 These are analogies. In software we talk about events (records/messages) and state updates; an "actual occasion" maps best to a *bounded act of processing* that consumes prior facts and yields a new concrete result.
 
 - **A bounded context reacting to a stream**:
-Each handler invocation (occasion) prehends domain facts; the nexus is the context’s working pattern—its consistent language, invariants, and subscriptions that make those invocations cohere.
+Each handler invocation (occasion) prehends domain facts; the nexus is the context's working pattern—its consistent language, invariants, and subscriptions that make those invocations cohere.
 
 - **A distributed trace of one request**:
 Every span in services A→B→C is an occasion. The full trace—causal links, timings, retries—is a nexus (a structured region of related processing).
@@ -46,9 +46,12 @@ Each projection step (occasion) takes up a fact; the read model as a whole, with
 ## Let's finish the code
 
 ### Defining the Nexus abstraction
-A nexus is the our abstraction to organize and orchestrate multiple occasions. It will help us route data between occasions based on their prehensions. It should then provide an API to:
+A nexus is our abstraction to organize and orchestrate multiple occasions. It will help us route data between occasions based on their prehensions. It should then provide an API to:
+
 - Register occasions
+
 - Route data between occasions based on their prehensions
+
 - Emit resulting data from occasions to the outside world
 
 Here is a possible implementation:
@@ -112,7 +115,7 @@ class Nexus:
 
 ```
 
-### Back to our deposit example
+### Back to our payment processing example
 To build the nexus we just need
 
 ```python
@@ -128,13 +131,13 @@ nexus = (
 )
 ```
 
-Intuitively speaking, we have created a nexus called "Commerce", a room where messages come in and get routed. We add the participants (payments, decision, audit) to the room, each can react to certain messages.
-We then bind the rules for who reats to what, those are what the prehensions define. *when this kind of mssage arrivesl let this particular actor feel it in this way*, e.g., when an order is placed, tge payments actor evaluates (approve/decline) the payment.
+Intuitively speaking, we have created a nexus called "Commerce", a room where messages come in and get routed. We add the participants (`payments`, `decision`, `audit`) to the room, each can react to certain messages.
+We then bind the rules for who reacts to what, those are what the prehensions define. *when this kind of mssage arrives, let this particular actor feel it in this way*, e.g., when an order is placed, the payments actor evaluates (approve/decline) the payment.
 
-> “Set up a ‘Commerce’ room with three actors.
+> "Set up a `Commerce` room with three actors.If an order is placed, Payments evaluates it.
 If an order is placed, Payments evaluates it.
 If a payment is authorized or declined, OrderDecision records the result.
-And no matter what happens, Audit logs it all.”
+And no matter what happens, Audit logs it all."
 
 Let's create a little middleware to ensure correlation ids are threaded through:
 

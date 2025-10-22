@@ -8,6 +8,8 @@ Now that we completed the foundational aspects of the event-framework, it's esse
 
 **Our framework**: centers on process/becoming: Occasions (subjects that react), Prehensions (rules for how/when they react), Nexus (the room/router), Datum (facts). It’s event-oriented by construction and very composable.
 
+There is, however, a natural mapping between the two approaches, which allows us to leverage DDD concepts while benefiting from the intuitive philosophy of our event-framework.
+
 ### Mapping of core pieces
 
 | Our framework | DDD-ish analogue | Notes |
@@ -21,7 +23,7 @@ Now that we completed the foundational aspects of the event-framework, it's esse
 - **Edge-first behavior**. Encodes when and how reactions happen as first-class objects (prehensions).
 - **Composability**. Add/remove behavior without modifying core classes.
 - **Replay & determinism friendly**. Facts-in → reactions → new facts out.
-- **Pedagogical clarity**. “Who reacts, to what, and how” reads almost like prose.
+- **Pedagogical clarity**. "Who reacts, to what, and how" reads almost like prose.
 
 ### What classic DDD brings that we haven't formalized
 
@@ -42,9 +44,9 @@ This may represent future work, but here are some ideas:
 - Command type (separate from Datum/Event) + Command Handlers: Distinguish intent (AuthorizePayment) from fact (PaymentAuthorized).
 
 - Aggregate base with invariant checks and a decision method
-e.g., apply(command) -> [events], evolve(state, event) -> state. Prevent illegal transitions.
+e.g., apply(command) → [events], evolve(state, event) → state. Prevent illegal transitions.
 
-- Repository interfaces: load(aggregate_id) -> state, commit(events, expected_version). Add optimistic concurrency & versioning.
+- Repository interfaces: load(aggregate_id) → state, commit(events, expected_version). Add optimistic concurrency & versioning.
 
 - Event Store + snapshots: Pluggable backends (in-memory, Postgres, Dynamo, S3+Parquet).
 
@@ -65,7 +67,7 @@ Anti-corruption layers between bounded contexts (translation prehensions).
 
 - Schema/contract versioning: Event/Datum version field + upcasters/downcasters.
 
-- Testing scaffolding: Given–When–Then harness: (given events) + (when command) => (expect events/state). Given–When–Then harness: `(given events) + (when command) => (expect events/state)`.
+- Testing scaffolding: Given–When–Then harness: `(given events) + (when command) → (expect events/state)`.
 
 ### API ergonomics
 
