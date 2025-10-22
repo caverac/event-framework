@@ -4,7 +4,7 @@ A Whitehead-inspired Domain-Driven Design framework — *"From Philosophical Cos
 
 ## Table of Contents
 
-- [Quick Start](#quick-start)
+- [Install & Sync Dependencies](#install--sync-dependencies-uv)
 - [Documentation Site](#documentation-site)
 - [Project Layout](#project-layout)
 - [Design principles](#design-principles)
@@ -16,8 +16,6 @@ A Whitehead-inspired Domain-Driven Design framework — *"From Philosophical Cos
 - [License](#license)
 
 
-
-## Quick Start
 
 ## Install & Sync Dependencies (`uv`)
 
@@ -40,38 +38,40 @@ uv run pytest -q
 ## Documentation Site
 Narrative docs + examples live under docs/ and publish via GitHub Pages.
 
-```bash
-uv run mkdocs serve
-```
-
-Build the side
+Build the site
 
 ```bash
 uv run mkdocs build --strict
 ```
 
+and serve locally with live reload:
+
+```bash
+uv run mkdocs serve
+```
+
+The currently deployed site is at: https://caverac.github.io/event-framework/
+
+
 ## Project Layout
 
 ```bash
 cosmology-to-software/
-├─ pyproject.toml                # runtime + dev/docs groups (uv)
+├─ pyproject.toml
 ├─ src/
 │  └─ event_framework/
 │     ├─ __init__.py
-│     ├─ core.py                 # core abstractions: Occasion, Prehension, Decision, Invariants, Event
-│     └─ ddd/
-│        └─ adapters/            # (optional) persistence, buses, etc.
+│     ├─ core.py
 ├─ tests/
-│  └─ test_core.py
+│  └─ unit/
+│     └─ event_framework/
+│        └─ test_core.py
 ├─ docs/
-│  ├─ index.md                   # narrative overview (philosophy → code)
+│  ├─ index.md
 │  ├─ getting-started.md
-│  ├─ examples/
-│  │  └─ orbit-basics.ipynb      # runnable example (or .qmd if using Quarto)
-│  └─ api.md                     # mkdocstrings entry point
-├─ mkdocs.yml                    # docs site config (if using MkDocs)
+├─ mkdocs.yml
 └─ .github/workflows/
-   └─ docs.yml                   # build & deploy Pages
+   └─ docs.yml
 ```
 
 ## Design principles
@@ -87,9 +87,9 @@ cosmology-to-software/
 
 ```bash
 uv run pytest -q
-uv run ruff check .
-uv run mypy src
+uv run pylint src tests
 uv run black --check src tests
+uv run mypy src tests
 ```
 
 ## Using `virtualenvwrapper` with `uv`
@@ -104,7 +104,7 @@ uv sync --all-groups --active
 Or tell uv to treat that env as the project env:
 
 ```bash
-export UV_PROJECT_ENVIRONMENT="$HOME/.virtualenvs/projects@cosmology-to-software"
+export UV_PROJECT_ENVIRONMENT="$HOME/.virtualenvs/<virtual-env-name>"
 uv sync --all-groups
 ```
 
@@ -120,9 +120,3 @@ uv sync --all-groups
 
 ## License
 MIT License. See [LICENSE.md](LICENSE.md) file for details.
-
-## Build docs
-```bash
-uv run --active mkdocs build --strict
-uv run --active mkdocs serve
-``` 
